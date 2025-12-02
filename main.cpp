@@ -1,110 +1,100 @@
 #include <iostream>
 #include <cstring>
+#include <conio.h>
 #include "trainManager.h"
 
 void displayMenu() {
-    std::cout << "\n=== Меню управления поездами ===" << std::endl;
-    std::cout << "1. Добавить поезд" << std::endl;
-    std::cout << "2. Добавить поезд на определенную позицию" << std::endl;
-    std::cout << "3. Удалить поезд" << std::endl;
-    std::cout << "4. Редактировать поезд" << std::endl;
-    std::cout << "5. Показать все поезда" << std::endl;
-    std::cout << "6. Найти поезда по пункту назначения" << std::endl;
-    std::cout << "7. Выход" << std::endl;
-    std::cout << "Выберите опцию: ";
+    std::cout << "\nTrain management menu" << std::endl;
+    std::cout << "1. Add a train" << std::endl;
+    std::cout << "2. Add a train to a specific position" << std::endl;
+    std::cout << "3. Delete a train" << std::endl;
+    std::cout << "4. Edit the train" << std::endl;
+    std::cout << "5. Show all trains" << std::endl;
+    std::cout << "6. Find trains by destination" << std::endl;
+    std::cout << "7. Exit\n" << std::endl;
 }
 
 int main() {
     TrainManager manager;
-    int choice;
-    
-    // Добавим несколько тестовых поездов
-    try {
-        manager.addTrain(TRAIN("Москва", 101, "08:30"));
-        manager.addTrain(TRAIN("Санкт-Петербург", 205, "14:15"));
-        manager.addTrain(TRAIN("Москва", 78, "22:45"));
-    } catch (const std::exception& e) {
-        std::cout << "Ошибка при инициализации: " << e.what() << std::endl;
-    }
+    char choice;
     
     do {
         displayMenu();
-        std::cin >> choice;
+        choice = _getch();
         
         try {
             switch (choice) {
-                case 1: {
+                case '1': {
                     TRAIN newTrain;
                     std::cin >> newTrain;
                     manager.addTrain(newTrain);
-                    std::cout << "Поезд добавлен успешно!" << std::endl;
+                    std::cout << "The train was added successfully!" << std::endl;
                     break;
                 }
-                case 2: {
+                case '2': {
                     int position;
-                    std::cout << "Введите позицию для добавления (1-" << manager.getSize() + 1 << "): ";
+                    std::cout << "Enter the position to add (1-" << manager.getSize() + 1 << "): ";
                     std::cin >> position;
                     TRAIN newTrain;
                     std::cin >> newTrain;
                     manager.addTrainAtPosition(newTrain, position - 1);
-                    std::cout << "Поезд добавлен на позицию " << position << "!" << std::endl;
+                    std::cout << "Train added to position " << position << "!" << std::endl;
                     break;
                 }
-                case 3: {
+                case '3': {
                     if (manager.getSize() == 0) {
-                        std::cout << "Список поездов пуст!" << std::endl;
+                        std::cout << "The train list is empty!" << std::endl;
                         break;
                     }
                     manager.displayAllTrains();
                     int index;
-                    std::cout << "Введите номер поезда для удаления: ";
+                    std::cout << "Enter the number to delete: ";
                     std::cin >> index;
                     manager.removeTrain(index - 1);
-                    std::cout << "Поезд удален успешно!" << std::endl;
+                    std::cout << "The train was successfully deleted!" << std::endl;
                     break;
                 }
-                case 4: {
+                case '4': {
                     if (manager.getSize() == 0) {
-                        std::cout << "Список поездов пуст!" << std::endl;
+                        std::cout << "The train list is empty!" << std::endl;
                         break;
                     }
                     manager.displayAllTrains();
                     int index;
-                    std::cout << "Введите номер поезда для редактирования: ";
+                    std::cout << "Enter the number to edit: ";
                     std::cin >> index;
                     manager.editTrain(index - 1);
-                    std::cout << "Поезд отредактирован успешно!" << std::endl;
+                    std::cout << "The train was edited successfully!" << std::endl;
                     break;
                 }
-                case 5: {
+                case '5': {
                     manager.displayAllTrains();
                     break;
                 }
-                case 6: {
+                case '6': {
                     if (manager.getSize() == 0) {
-                        std::cout << "Список поездов пуст!" << std::endl;
+                        std::cout << "The train list is empty!" << std::endl;
                         break;
                     }
                     char destination[100];
-                    std::cout << "Введите пункт назначения: ";
+                    std::cout << "Enter your destination: ";
                     std::cin >> destination;
                     manager.displayTrainsToDestination(destination);
                     break;
                 }
-                case 7: {
-                    std::cout << "Выход из программы..." << std::endl;
+                case '7': {
+                    std::cout << "Exiting the program..." << std::endl;
                     break;
                 }
                 default: {
-                    std::cout << "Неверный выбор! Попробуйте снова." << std::endl;
                     break;
                 }
             }
         } catch (const std::exception& e) {
-            std::cout << "Ошибка: " << e.what() << std::endl;
+            std::cout << "Error: " << e.what() << std::endl;
         }
         
-    } while (choice != 8);
+    } while (choice != '7');
     
     return 0;
 }

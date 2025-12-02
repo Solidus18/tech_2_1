@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cstring>
+#include <conio.h>
 
 class InvalidIndexException : public std::exception {
 private:
@@ -24,7 +25,7 @@ public:
 class EmptyListException : public std::exception {
 public:
     const char* what() const noexcept override {
-        return "Список поездов пуст!";
+        return "The train list is empty!";
     }
 };
 
@@ -33,7 +34,7 @@ TrainManager::TrainManager() : capacity(10), size(0) {
     for (int i = 0; i < capacity; i++) {
         trains[i] = nullptr;
     }
-    std::cout << "Вызван конструктор TrainManager" << std::endl;
+    std::cout << "The constructor TrainManager is called" << std::endl;
 }
 
 TrainManager::~TrainManager() {
@@ -41,7 +42,7 @@ TrainManager::~TrainManager() {
         delete trains[i];
     }
     delete[] trains;
-    std::cout << "Вызван деструктор TrainManager" << std::endl;
+    std::cout << "The destructor TrainManager is called" << std::endl;
 }
 
 void TrainManager::resize() {
@@ -69,7 +70,7 @@ void TrainManager::addTrain(const TRAIN& train) {
 
 void TrainManager::addTrainAtPosition(const TRAIN& train, int position) {
     if (position < 0 || position > size) {
-        throw InvalidIndexException("Неверная позиция для добавления поезда!");
+        throw InvalidIndexException("Incorrect position for adding a train!");
     }
     
     if (size >= capacity) {
@@ -89,7 +90,7 @@ void TrainManager::removeTrain(int index) {
         throw EmptyListException();
     }
     if (index < 0 || index >= size) {
-        throw InvalidIndexException("Неверный индекс для удаления поезда!");
+        throw InvalidIndexException("Invalid index for deleting a train!");
     }
     
     delete trains[index];
@@ -102,21 +103,124 @@ void TrainManager::removeTrain(int index) {
 
 void TrainManager::editTrain(int index) {
     if (index < 0 || index >= size) {
-        throw InvalidIndexException("Неверный индекс для редактирования поезда!");
+        throw InvalidIndexException("Invalid index for editing train!");
     }
     
-    std::cout << "Редактирование поезда #" << index + 1 << std::endl;
-    std::cin >> *trains[index];
-    sortByDepartureTime();
+    TRAIN* train = trains[index];
+    char choice;
+    char buffer[100];
+    int number;
+    bool editing = true;
+    
+    std::cout << "\nEditing train #" << (index + 1) << std::endl;
+    std::cout << "Current data: " << *train << std::endl;
+    
+    while (editing) {
+        std::cout << "\n--- Edit Menu ---" << std::endl;
+        std::cout << "1. Change destination" << std::endl;
+        std::cout << "2. Change train number" << std::endl;
+        std::cout << "3. Change departure time" << std::endl;
+        std::cout << "4. Finish editing\n" << std::endl;
+        
+        choice = _getch();
+        
+        switch (choice) {
+            case '1': { 
+                std::cout << "Current destination: " << train->getDestination() << std::endl;
+                std::cout << "Enter new destination: ";
+                std::cin >> buffer;
+                train->setDestination(buffer);
+                std::cout << "Destination updated!" << std::endl;
+                break;
+            }
+            
+            case '2': {
+                std::cout << "Current train number: " << train->getTrainNumber() << std::endl;
+                
+                bool validInput = false;
+                while (!validInput) {
+                    std::cout << "Enter new train number (positive integer): ";
+                    
+                    if (!(std::cin >> number)) {
+                        std::cout << "Error: Please enter a valid integer number!" << std::endl;
+                        std::cin.clear();
+                        std::cin.ignore(10000, '\n');
+                        continue;
+                    }
+                    
+                    if (TRAIN::isValidTrainNumber(number)) {
+                        try {
+                            train->setTrainNumber(number);
+                            validInput = true;
+                            std::cout << "Train number updated!" << std::endl;
+                        } catch (const std::exception& e) {
+                            std::cout << "Error: " << e.what() << std::endl;
+                        }
+                    } else {
+                        std::cout << "Error: Train number must be positive (greater than 0)!" << std::endl;
+                        std::cin.ignore(10000, '\n');
+                    }
+                }
+                break;
+            }
+            
+            case '3': { 
+                std::cout << "Current departure time: " << train->getDepartureTime() << std::endl;
+                
+                bool validInput = false;
+                std::cin.ignore(10000, '\n');
+                
+                while (!validInput) {
+                    std::cout << "Enter new departure time (HH:MM, 00:00 to 23:59, exactly 5 characters): ";
+                    std::cin.getline(buffer, 100);
+                    
+                    if (strlen(buffer) == 0) {
+                        std::cout << "Error: Time cannot be empty!" << std::endl;
+                        continue;
+                    }
+                    
+                    if (!TRAIN::isValidTimeFormat(buffer)) {
+                        std::cout << "Error: Invalid time format! Must be exactly 5 characters: HH:MM" << std::endl;
+                        continue;
+                    }
+                    
+                    if (!TRAIN::isValidTimeValues(buffer)) {
+                        std::cout << "Error: Invalid time values! Hours must be 00-23, minutes must be 00-59" << std::endl;
+                        continue;
+                    }
+                    
+                    try {
+                        train->setDepartureTime(buffer);
+                        validInput = true;
+                        std::cout << "Departure time updated!" << std::endl;
+                    } catch (const std::exception& e) {
+                        std::cout << "Error: " << e.what() << std::endl;
+                    }
+                }
+                break;
+            }
+            
+            case '4': {
+                editing = false;
+                std::cout << "Editing completed!" << std::endl;
+                sortByDepartureTime();
+                break;
+            }
+            
+            default: {
+                break;
+            }
+        }
+    }
 }
 
 void TrainManager::displayAllTrains() const {
     if (size == 0) {
-        std::cout << "Список поездов пуст!" << std::endl;
+        std::cout << "The train list is empty!" << std::endl;
         return;
     }
     
-    std::cout << "\n=== Все поезда ===" << std::endl;
+    std::cout << "\nAll trains" << std::endl;
     for (int i = 0; i < size; i++) {
         std::cout << i + 1 << ". " << *trains[i] << std::endl;
     }
@@ -128,7 +232,7 @@ void TrainManager::displayTrainsToDestination(const char* destination) const {
     }
     
     bool found = false;
-    std::cout << "\n=== Поезда в пункт: " << destination << " ===" << std::endl;
+    std::cout << "\nTrains to the destination: " << destination << std::endl;
     
     for (int i = 0; i < size; i++) {
         if (strcmp(trains[i]->getDestination(), destination) == 0) {
@@ -138,7 +242,7 @@ void TrainManager::displayTrainsToDestination(const char* destination) const {
     }
     
     if (!found) {
-        std::cout << "Поездов в указанный пункт назначения не найдено!" << std::endl;
+        std::cout << "No trains to the specified destination were found!" << std::endl;
     }
 }
 
@@ -158,7 +262,7 @@ void TrainManager::sortByDepartureTime() {
 
 TRAIN* TrainManager::getTrain(int index) const {
     if (index < 0 || index >= size) {
-        throw InvalidIndexException("Неверный индекс поезда!");
+        throw InvalidIndexException("Incorrect train index!");
     }
     return trains[index];
 }
